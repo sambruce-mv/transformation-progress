@@ -40,6 +40,8 @@ import {
 } from '../data/mockData';
 import MyPathwayCard from '../components/MyPathwayCard';
 import PathwaySwitcher from '../components/PathwaySwitcher';
+import MilestoneCelebration from '../components/MilestoneCelebration';
+import ProgramCompleteCelebration from '../components/ProgramCompleteCelebration';
 import { usePathway } from '../context/PathwayContext';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
@@ -579,6 +581,8 @@ export default function TodayScreen() {
         <View style={styles.bottomPadding} />
       </ScrollView>
       <PathwaySwitcher visible={showSwitcher} onClose={() => setShowSwitcher(false)} />
+      <MilestoneCelebration />
+      <ProgramCompleteCelebration />
     </SafeAreaView>
   );
 }
