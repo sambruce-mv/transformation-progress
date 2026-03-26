@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -38,6 +38,9 @@ import {
   soundsForGoal,
   liveClasses,
 } from '../data/mockData';
+import MyPathwayCard from '../components/MyPathwayCard';
+import PathwaySwitcher from '../components/PathwaySwitcher';
+import { usePathway } from '../context/PathwayContext';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -45,6 +48,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function TodayScreen() {
   const { isSubscriber, userName, dayStreak, userTier } = useUser();
   const navigation = useNavigation<NavigationProp>();
+  const { hasPathway, activeProgress } = usePathway();
+  const [showSwitcher, setShowSwitcher] = useState(false);
 
   const navigateToQuest = (questId: string, title: string, image: string, author: string) => {
     navigation.navigate('QuestDetail', {
@@ -82,6 +87,10 @@ export default function TodayScreen() {
     });
   };
 
+  const filteredContinuePrograms = hasPathway && activeProgress
+    ? continuePrograms.filter(p => !activeProgress.completedPrograms.includes(p.id) && p.id !== activeProgress.currentProgramId)
+    : continuePrograms;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Header />
@@ -109,12 +118,17 @@ export default function TodayScreen() {
           />
         </TouchableOpacity>
 
+        {/* My Pathway */}
+        {hasPathway && (
+          <MyPathwayCard onSwitchPress={() => setShowSwitcher(true)} />
+        )}
+
         {isSubscriber ? (
           // L3/L4 Subscriber Experience
           <>
             {/* 1. Continue Programs */}
             <Section title="Continue programs" showSeeAll horizontal>
-              {continuePrograms.map((program) => (
+              {filteredContinuePrograms.map((program) => (
                 <ContinueProgramCard
                   key={program.id}
                   {...program}
@@ -564,6 +578,7 @@ export default function TodayScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+      <PathwaySwitcher visible={showSwitcher} onClose={() => setShowSwitcher(false)} />
     </SafeAreaView>
   );
 }
