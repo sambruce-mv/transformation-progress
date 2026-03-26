@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { questLessons } from '../data/mockData';
+import { usePathway } from '../context/PathwayContext';
 
 interface Props {
   navigation?: any;
@@ -16,8 +17,15 @@ export default function QuestDetailScreen({ navigation }: Props) {
   const [activeTab, setActiveTab] = useState<'Lesson' | 'Discussions'>('Lesson');
   const [showLessonList, setShowLessonList] = useState(false);
 
+  const { activePathway, activeProgress, hasPathway } = usePathway();
+
   // Use Silva Ultramind as default
   const quest = questLessons.silvaUltramind;
+
+  // Find breadcrumb info
+  const pathwayPhase = hasPathway && activePathway
+    ? activePathway.phases.find(p => p.programs.some(pr => pr.questId === 'silva-ultramind' || pr.title === quest.programTitle))
+    : null;
   const lesson = quest.currentLesson;
 
   const imgSrc = typeof lesson.videoThumbnail === 'string'
@@ -41,6 +49,17 @@ export default function QuestDetailScreen({ navigation }: Props) {
           <Ionicons name="list" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {hasPathway && activePathway && pathwayPhase && (
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8,
+          backgroundColor: 'rgba(123,104,238,0.08)',
+        }}>
+          <Text style={{ fontSize: 11, color: colors.textMuted }}>
+            {activePathway.name} Pathway {'>'} {pathwayPhase.name} {'>'} {quest.programTitle}
+          </Text>
+        </View>
+      )}
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Video hero */}
@@ -153,6 +172,13 @@ export default function QuestDetailScreen({ navigation }: Props) {
         <TouchableOpacity style={styles.ctaButton} activeOpacity={0.9}>
           <Text style={styles.ctaText}>Complete lesson</Text>
         </TouchableOpacity>
+        {hasPathway && activeProgress && (
+          <Text style={{
+            fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 6,
+          }}>
+            Next in Pathway: {activeProgress.currentProgramTitle}
+          </Text>
+        )}
       </View>
 
       {/* Lesson list modal */}
