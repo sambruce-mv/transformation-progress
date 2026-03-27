@@ -89,37 +89,7 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
         </View>
       </View>
 
-      {/* Progress Bar + Stats */}
-      <View style={styles.statsSection}>
-        <View style={styles.progressBarRow}>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${overallPercent}%`, backgroundColor: pathway.accentColor }]} />
-          </View>
-          <Text style={[styles.progressPercent, { color: pathway.accentColor }]}>{overallPercent}%</Text>
-        </View>
-        <View style={styles.statsRow}>
-          <View style={styles.statPill}>
-            <Text style={styles.statPillValue}>{completedCount}/{pathway.totalPrograms}</Text>
-            <Text style={styles.statPillLabel}>programs</Text>
-          </View>
-          {progress.pathwayStreak > 0 && (
-            <View style={[styles.statPill, styles.statPillHighlight]}>
-              <Text style={[styles.statPillValue, { color: colors.gold }]}>{'\u{1F525}'} {progress.pathwayStreak}</Text>
-              <Text style={styles.statPillLabel}>streak</Text>
-            </View>
-          )}
-          <View style={styles.statPill}>
-            <Text style={styles.statPillValue}>{progress.weeklyLessonCount}/{progress.weeklyLessonGoal}</Text>
-            <Text style={styles.statPillLabel}>this week</Text>
-          </View>
-          <View style={styles.statPill}>
-            <Text style={styles.statPillValue}>{progress.totalHoursLearned}h</Text>
-            <Text style={styles.statPillLabel}>learned</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Horizontal Path: covers are primary, waypoints are small separators */}
+      {/* Horizontal Path: covers at the top */}
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -201,7 +171,35 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
         })}
       </ScrollView>
 
-      <View style={{ height: 4 }} />
+      {/* Progress Bar + Stats */}
+      <View style={styles.statsSection}>
+        <View style={styles.progressBarRow}>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${overallPercent}%`, backgroundColor: pathway.accentColor }]} />
+          </View>
+          <Text style={[styles.progressPercent, { color: pathway.accentColor }]}>{overallPercent}%</Text>
+        </View>
+        <View style={styles.statsRow}>
+          <View style={styles.statPill}>
+            <Text style={styles.statPillValue}>{completedCount}/{pathway.totalPrograms}</Text>
+            <Text style={styles.statPillLabel}>programs</Text>
+          </View>
+          {progress.pathwayStreak > 0 && (
+            <View style={[styles.statPill, styles.statPillHighlight]}>
+              <Text style={[styles.statPillValue, { color: colors.gold }]}>{'\u{1F525}'} {progress.pathwayStreak}</Text>
+              <Text style={styles.statPillLabel}>streak</Text>
+            </View>
+          )}
+          <View style={styles.statPill}>
+            <Text style={styles.statPillValue}>{progress.weeklyLessonCount}/{progress.weeklyLessonGoal}</Text>
+            <Text style={styles.statPillLabel}>this week</Text>
+          </View>
+          <View style={styles.statPill}>
+            <Text style={styles.statPillValue}>{progress.totalHoursLearned}h</Text>
+            <Text style={styles.statPillLabel}>learned</Text>
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }
