@@ -82,14 +82,41 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerIcon}>{pathway.icon}</Text>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerName}>{pathway.name}</Text>
             <Text style={styles.headerTagline}>{pathway.tagline}</Text>
           </View>
         </View>
-        <Text style={styles.headerProgress}>
-          {overallPercent}% · {completedCount}/{pathway.totalPrograms}
-        </Text>
+      </View>
+
+      {/* Progress Bar + Stats */}
+      <View style={styles.statsSection}>
+        <View style={styles.progressBarRow}>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${overallPercent}%`, backgroundColor: pathway.accentColor }]} />
+          </View>
+          <Text style={[styles.progressPercent, { color: pathway.accentColor }]}>{overallPercent}%</Text>
+        </View>
+        <View style={styles.statsRow}>
+          <View style={styles.statPill}>
+            <Text style={styles.statPillValue}>{completedCount}/{pathway.totalPrograms}</Text>
+            <Text style={styles.statPillLabel}>programs</Text>
+          </View>
+          {progress.pathwayStreak > 0 && (
+            <View style={[styles.statPill, styles.statPillHighlight]}>
+              <Text style={[styles.statPillValue, { color: colors.gold }]}>{'\u{1F525}'} {progress.pathwayStreak}</Text>
+              <Text style={styles.statPillLabel}>streak</Text>
+            </View>
+          )}
+          <View style={styles.statPill}>
+            <Text style={styles.statPillValue}>{progress.weeklyLessonCount}/{progress.weeklyLessonGoal}</Text>
+            <Text style={styles.statPillLabel}>this week</Text>
+          </View>
+          <View style={styles.statPill}>
+            <Text style={styles.statPillValue}>{progress.totalHoursLearned}h</Text>
+            <Text style={styles.statPillLabel}>learned</Text>
+          </View>
+        </View>
       </View>
 
       {/* Horizontal Path: covers are primary, waypoints are small separators */}
@@ -174,23 +201,7 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
         })}
       </ScrollView>
 
-      {/* Card Footer */}
-      <View style={styles.footer}>
-        {progress.pathwayStreak > 0 && (
-          <Text style={styles.footerStat}>
-            <Text style={{ color: colors.gold }}>{'\u{1F525}'} {progress.pathwayStreak}</Text>
-            <Text style={styles.footerStatLabel}> streak</Text>
-          </Text>
-        )}
-        <Text style={styles.footerStat}>
-          {progress.weeklyLessonCount}/{progress.weeklyLessonGoal}
-          <Text style={styles.footerStatLabel}> this week</Text>
-        </Text>
-        <Text style={styles.footerStat}>
-          {progress.totalHoursLearned}h
-          <Text style={styles.footerStatLabel}> learned</Text>
-        </Text>
-      </View>
+      <View style={{ height: 4 }} />
     </TouchableOpacity>
   );
 }
@@ -254,10 +265,57 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 1,
   },
-  headerProgress: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: '600',
+  // Stats section
+  statsSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  progressBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: colors.progressTrack,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: 6,
+    borderRadius: 3,
+  },
+  progressPercent: {
+    fontSize: 16,
+    fontWeight: '800',
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  statPill: {
+    flex: 1,
+    backgroundColor: colors.backgroundElevated,
+    borderRadius: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  statPillHighlight: {
+    backgroundColor: 'rgba(245,200,66,0.1)',
+  },
+  statPillValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  statPillLabel: {
+    fontSize: 9,
+    color: colors.textMuted,
+    marginTop: 1,
   },
 
   // Path
@@ -368,23 +426,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // Footer
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerStat: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  footerStatLabel: {
-    fontWeight: '400',
-    color: colors.textMuted,
-    fontSize: 11,
-  },
 });
