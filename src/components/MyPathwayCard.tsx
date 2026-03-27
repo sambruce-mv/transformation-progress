@@ -1,6 +1,6 @@
 // src/components/MyPathwayCard.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -66,6 +66,48 @@ export default function MyPathwayCard({ onSwitchPress }: MyPathwayCardProps) {
           <Text style={styles.continueBtnText}>Continue</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Program covers */}
+      {currentPhase && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.coversRow}
+        >
+          {currentPhase.programs.map(program => {
+            const isCompleted = activeProgress.completedPrograms.includes(program.questId);
+            const isCurrent = program.questId === activeProgress.currentProgramId;
+            const imgSrc = typeof program.image === 'string' ? { uri: program.image } : (program.image as any);
+
+            return (
+              <View key={program.questId} style={styles.coverItem}>
+                <View style={[
+                  styles.coverImageWrap,
+                  isCurrent && styles.coverImageCurrent,
+                  isCompleted && styles.coverImageCompleted,
+                ]}>
+                  <Image source={imgSrc} style={styles.coverImage} />
+                  {isCompleted && (
+                    <View style={styles.coverCheck}>
+                      <Ionicons name="checkmark" size={10} color="#fff" />
+                    </View>
+                  )}
+                  {!isCompleted && !isCurrent && !program.isUnlocked && (
+                    <View style={styles.coverLock}>
+                      <Ionicons name="lock-closed" size={8} color={colors.textMuted} />
+                    </View>
+                  )}
+                </View>
+                <Text style={[
+                  styles.coverTitle,
+                  isCurrent && styles.coverTitleCurrent,
+                  !isCompleted && !isCurrent && !program.isUnlocked && styles.coverTitleLocked,
+                ]} numberOfLines={2}>{program.title}</Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
 
       {/* Bottom compact row */}
       <View style={styles.bottomRow}>
@@ -201,6 +243,70 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+
+  // Program covers
+  coversRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  coverItem: {
+    width: 64,
+    alignItems: 'center',
+  },
+  coverImageWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: colors.backgroundElevated,
+    marginBottom: 4,
+  },
+  coverImageCurrent: {
+    borderWidth: 2,
+    borderColor: '#7B68EE',
+  },
+  coverImageCompleted: {
+    opacity: 0.6,
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+  },
+  coverCheck: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.teal,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  coverLock: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(10,14,23,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  coverTitle: {
+    fontSize: 9,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 11,
+  },
+  coverTitleCurrent: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  coverTitleLocked: {
+    color: colors.textMuted,
   },
 
   // Bottom row
