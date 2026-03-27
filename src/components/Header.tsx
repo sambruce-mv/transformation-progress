@@ -53,23 +53,14 @@ export default function Header() {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 6 }} contentContainerStyle={{ paddingHorizontal: 12, gap: 6 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scenarioBar} contentContainerStyle={styles.scenarioBarContent}>
         {allScenarios.map(s => (
           <TouchableOpacity
             key={s.id}
             onPress={() => setScenarioById(s.id)}
-            style={{
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              borderRadius: 10,
-              backgroundColor: scenario.id === s.id ? '#7B68EE' : 'transparent',
-            }}
+            style={[styles.scenarioBtn, scenario.id === s.id && styles.scenarioBtnActive]}
           >
-            <Text style={{
-              fontSize: 10,
-              color: scenario.id === s.id ? '#fff' : colors.textMuted,
-              fontWeight: scenario.id === s.id ? '700' : '400',
-            }}>
+            <Text style={[styles.scenarioBtnText, scenario.id === s.id && styles.scenarioBtnTextActive]}>
               {s.label}
             </Text>
           </TouchableOpacity>
@@ -123,5 +114,31 @@ const styles = StyleSheet.create({
   },
   tierBtnTextActive: {
     color: '#fff',
+  },
+  scenarioBar: {
+    maxHeight: 28,
+    marginBottom: 4,
+  },
+  scenarioBarContent: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 4,
+  },
+  scenarioBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  scenarioBtnActive: {
+    backgroundColor: '#7B68EE',
+  },
+  scenarioBtnText: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: '400',
+  },
+  scenarioBtnTextActive: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });
