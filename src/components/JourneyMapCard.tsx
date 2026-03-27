@@ -1,6 +1,6 @@
 // src/components/JourneyMapCard.tsx
 import React, { useRef, useEffect } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
@@ -11,10 +11,9 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const WAYPOINT_WIDTH = 90;
-const DOT_SIZE = 6;
-const DOT_GAP = 8;
-const PATH_PADDING = 20;
+const COVER_SIZE = 52;
+const COVER_GAP = 6;
+const PATH_PADDING = 16;
 
 interface JourneyMapCardProps {
   pathway: Pathway;
@@ -29,17 +28,27 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
   const overallPercent = Math.round((completedCount / pathway.totalPrograms) * 100);
   const isJourneyComplete = progress.completedPhases.length === pathway.phases.length;
 
-  const currentPhaseIndex = pathway.phases.findIndex(p => p.id === progress.currentPhaseId);
-
-  // Auto-scroll to current waypoint on mount
+  // Auto-scroll to current program on mount
   useEffect(() => {
-    if (currentPhaseIndex > 0 && scrollRef.current) {
-      const scrollTo = currentPhaseIndex * (WAYPOINT_WIDTH + 40) - SCREEN_WIDTH / 2 + WAYPOINT_WIDTH / 2 + PATH_PADDING;
+    // Estimate position of current program in the flat list
+    let programIndex = 0;
+    let separatorsBefore = 0;
+    for (const phase of pathway.phases) {
+      if (phase.id === progress.currentPhaseId) {
+        const progIdx = phase.programs.findIndex(p => p.questId === progress.currentProgramId);
+        programIndex += Math.max(0, progIdx);
+        break;
+      }
+      programIndex += phase.programs.length;
+      separatorsBefore++;
+    }
+    if (programIndex > 2 && scrollRef.current) {
+      const scrollTo = programIndex * (COVER_SIZE + COVER_GAP) + separatorsBefore * 54 - SCREEN_WIDTH / 2 + COVER_SIZE / 2;
       setTimeout(() => {
         scrollRef.current?.scrollTo({ x: Math.max(0, scrollTo), animated: true });
       }, 300);
     }
-  }, [currentPhaseIndex]);
+  }, [progress.currentProgramId]);
 
   const getWaypointState = (phaseId: string): 'completed' | 'current' | 'locked' => {
     if (progress.completedPhases.includes(phaseId)) return 'completed';
@@ -47,41 +56,18 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
     return 'locked';
   };
 
-  const getWaypointLabel = (phase: typeof pathway.phases[0], state: 'completed' | 'current' | 'locked'): string => {
-    if (state === 'completed') return phase.badgeName;
-    if (state === 'current') return 'YOU ARE HERE';
-    return phase.name;
-  };
-
-  const getSocialProof = (phase: typeof pathway.phases[0], state: 'completed' | 'current' | 'locked', isFirstLocked: boolean): string | undefined => {
-    if (state === 'completed') {
-      const count = SOCIAL_PROOF.phaseCompletions[phase.id];
-      return count ? `${count.toLocaleString()} completed` : undefined;
-    }
-    if (state === 'current') {
-      const percentile = getPercentile(completedCount, pathway.totalPrograms);
-      return `Ahead of ${percentile}% of learners`;
-    }
-    if (state === 'locked' && isFirstLocked) {
-      const weeks = SOCIAL_PROOF.avgWeeksToReach[phase.id];
-      return weeks ? `Avg. ${weeks} weeks to reach` : undefined;
-    }
-    return undefined;
-  };
-
-  // Count completed programs within a phase
-  const getPhaseCompletedDots = (phase: typeof pathway.phases[0]): number => {
-    return phase.programs.filter(p => progress.completedPrograms.includes(p.questId)).length;
-  };
-
   const navigateToPathway = () => {
     navigation.navigate('PathwayDetail', { pathwayId: pathway.id });
   };
 
-  let firstLockedSeen = false;
+  const percentile = getPercentile(completedCount, pathway.totalPrograms);
 
   return (
-    <View style={[styles.card, { borderColor: pathway.accentColor + '20' }]}>
+    <TouchableOpacity
+      style={[styles.card, { borderColor: pathway.accentColor + '20' }]}
+      activeOpacity={0.9}
+      onPress={navigateToPathway}
+    >
       {/* Journey Complete overlay */}
       {isJourneyComplete && (
         <View style={styles.completeOverlay}>
@@ -106,7 +92,7 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
         </Text>
       </View>
 
-      {/* Horizontal Path */}
+      {/* Horizontal Path: covers are primary, waypoints are small separators */}
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -114,54 +100,73 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
         contentContainerStyle={styles.pathContent}
         style={styles.pathScroll}
       >
-        {pathway.phases.map((phase, index) => {
-          const state = getWaypointState(phase.id);
-          const isFirstLocked = state === 'locked' && !firstLockedSeen;
-          if (state === 'locked') firstLockedSeen = true;
-
-          const completedDots = getPhaseCompletedDots(phase);
-          const totalDots = phase.programs.length;
-          const isLast = index === pathway.phases.length - 1;
+        {pathway.phases.map((phase, phaseIndex) => {
+          const phaseState = getWaypointState(phase.id);
+          const isLastPhase = phaseIndex === pathway.phases.length - 1;
 
           return (
-            <View key={phase.id} style={styles.waypointSection}>
-              <JourneyWaypoint
-                state={state}
-                phaseIcon={phase.icon}
-                label={getWaypointLabel(phase, state)}
-                socialProofText={getSocialProof(phase, state, isFirstLocked)}
-                accentColor={pathway.accentColor}
-                onPress={navigateToPathway}
-              />
+            <View key={phase.id} style={styles.phaseGroup}>
+              {/* Phase separator (small) */}
+              {phaseIndex > 0 && (
+                <JourneyWaypoint
+                  state={phaseState}
+                  phaseIcon={phase.icon}
+                  phaseName={phase.name}
+                  accentColor={pathway.accentColor}
+                />
+              )}
 
-              {/* Program covers connector to next waypoint */}
-              {!isLast && (
-                <View style={styles.coversConnector}>
-                  <View style={styles.dashLine} />
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.coversRow}>
-                    {phase.programs.slice(0, 5).map((program) => {
-                      const isDone = progress.completedPrograms.includes(program.questId);
-                      const isActive = program.questId === progress.currentProgramId;
-                      return (
-                        <View key={program.questId} style={styles.coverThumbWrap}>
-                          <Image
-                            source={{ uri: program.image }}
-                            style={[
-                              styles.coverThumb,
-                              isActive && styles.coverThumbActive,
-                              isDone && styles.coverThumbDone,
-                              !isDone && !isActive && !program.isUnlocked && styles.coverThumbLocked,
-                            ]}
-                          />
-                          {isDone && (
-                            <View style={styles.coverCheckMini}>
-                              <Text style={{ fontSize: 6, color: '#fff' }}>{'\u2713'}</Text>
-                            </View>
-                          )}
+              {/* Program covers */}
+              {phase.programs.map((program) => {
+                const isDone = progress.completedPrograms.includes(program.questId);
+                const isCurrent = program.questId === progress.currentProgramId;
+                const isLocked = !isDone && !isCurrent && !program.isUnlocked;
+
+                return (
+                  <View key={program.questId} style={styles.coverItem}>
+                    <View style={[
+                      styles.coverWrap,
+                      isCurrent && [styles.coverCurrent, { borderColor: pathway.accentColor }],
+                      isDone && styles.coverDone,
+                      isLocked && styles.coverLocked,
+                    ]}>
+                      <Image source={{ uri: program.image }} style={styles.coverImage} />
+                      {isDone && (
+                        <View style={styles.coverCheck}>
+                          <Text style={styles.coverCheckText}>{'\u2713'}</Text>
                         </View>
-                      );
-                    })}
-                  </ScrollView>
+                      )}
+                      {isLocked && (
+                        <View style={styles.coverLockOverlay} />
+                      )}
+                    </View>
+                    <Text
+                      style={[
+                        styles.coverTitle,
+                        isCurrent && styles.coverTitleCurrent,
+                        isLocked && styles.coverTitleLocked,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {program.title}
+                    </Text>
+                    {/* YOU ARE HERE + social proof under current program */}
+                    {isCurrent && (
+                      <View style={styles.currentIndicator}>
+                        <Text style={[styles.youAreHere, { color: pathway.accentColor }]}>YOU ARE HERE</Text>
+                        <Text style={styles.socialProof}>Ahead of {percentile}% of learners</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+
+              {/* Show phase completion stat after last cover of a completed phase */}
+              {phaseState === 'completed' && !isLastPhase && (
+                <View style={styles.phaseStatWrap}>
+                  <Text style={styles.phaseStat}>
+                    {(SOCIAL_PROOF.phaseCompletions[phase.id] ?? 0).toLocaleString()} completed
+                  </Text>
                 </View>
               )}
             </View>
@@ -186,7 +191,7 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
           <Text style={styles.footerStatLabel}> learned</Text>
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -257,67 +262,110 @@ const styles = StyleSheet.create({
 
   // Path
   pathScroll: {
-    marginVertical: 12,
+    marginVertical: 8,
   },
   pathContent: {
     paddingHorizontal: PATH_PADDING,
     alignItems: 'flex-start',
     flexDirection: 'row',
   },
-  waypointSection: {
+  phaseGroup: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  coversConnector: {
-    justifyContent: 'center',
+
+  // Program covers — the primary visual
+  coverItem: {
     alignItems: 'center',
-    paddingTop: 8,
-    marginHorizontal: 2,
+    width: COVER_SIZE + 10,
+    marginRight: COVER_GAP,
   },
-  dashLine: {
-    position: 'absolute',
-    top: 28,
-    left: 0,
-    right: 0,
-    height: 1,
-    borderStyle: 'dashed',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  coversRow: {
-    flexDirection: 'row',
-    gap: 4,
-    alignItems: 'center',
-  },
-  coverThumbWrap: {
-    position: 'relative',
-  },
-  coverThumb: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
+  coverWrap: {
+    width: COVER_SIZE,
+    height: COVER_SIZE,
+    borderRadius: 10,
+    overflow: 'hidden',
     backgroundColor: colors.backgroundElevated,
   },
-  coverThumbActive: {
-    borderWidth: 1.5,
-    borderColor: '#7B68EE',
+  coverCurrent: {
+    borderWidth: 2,
   },
-  coverThumbDone: {
+  coverDone: {
     opacity: 0.5,
   },
-  coverThumbLocked: {
-    opacity: 0.25,
+  coverLocked: {
+    opacity: 0.2,
   },
-  coverCheckMini: {
+  coverImage: {
+    width: '100%',
+    height: '100%',
+  },
+  coverCheck: {
     position: 'absolute',
-    bottom: 1,
-    right: 1,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: colors.teal,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  coverCheckText: {
+    fontSize: 8,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  coverLockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(10,14,23,0.5)',
+  },
+  coverTitle: {
+    fontSize: 8,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 3,
+    lineHeight: 10,
+  },
+  coverTitleCurrent: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  coverTitleLocked: {
+    color: colors.textMuted,
+  },
+
+  // Current program indicator
+  currentIndicator: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  youAreHere: {
+    fontSize: 7,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  socialProof: {
+    fontSize: 7,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
+
+  // Phase completion stat
+  phaseStatWrap: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 18,
+    marginRight: 4,
+  },
+  phaseStat: {
+    fontSize: 7,
+    color: colors.teal,
+    fontWeight: '500',
   },
 
   // Footer
