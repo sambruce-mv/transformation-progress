@@ -1,6 +1,6 @@
 // src/components/JourneyMapCard.tsx
 import React, { useRef, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
@@ -134,22 +134,34 @@ export default function JourneyMapCard({ pathway, progress }: JourneyMapCardProp
                 onPress={navigateToPathway}
               />
 
-              {/* Program dots connector to next waypoint */}
+              {/* Program covers connector to next waypoint */}
               {!isLast && (
-                <View style={styles.dotsConnector}>
+                <View style={styles.coversConnector}>
                   <View style={styles.dashLine} />
-                  <View style={styles.dotsRow}>
-                    {Array.from({ length: Math.min(totalDots, 7) }).map((_, dotIdx) => (
-                      <View
-                        key={dotIdx}
-                        style={[
-                          styles.dot,
-                          dotIdx < completedDots ? styles.dotFilled : styles.dotEmpty,
-                          dotIdx < completedDots && { backgroundColor: colors.teal },
-                        ]}
-                      />
-                    ))}
-                  </View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.coversRow}>
+                    {phase.programs.slice(0, 5).map((program) => {
+                      const isDone = progress.completedPrograms.includes(program.questId);
+                      const isActive = program.questId === progress.currentProgramId;
+                      return (
+                        <View key={program.questId} style={styles.coverThumbWrap}>
+                          <Image
+                            source={{ uri: program.image }}
+                            style={[
+                              styles.coverThumb,
+                              isActive && styles.coverThumbActive,
+                              isDone && styles.coverThumbDone,
+                              !isDone && !isActive && !program.isUnlocked && styles.coverThumbLocked,
+                            ]}
+                          />
+                          {isDone && (
+                            <View style={styles.coverCheckMini}>
+                              <Text style={{ fontSize: 6, color: '#fff' }}>{'\u2713'}</Text>
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
                 </View>
               )}
             </View>
@@ -256,16 +268,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  dotsConnector: {
+  coversConnector: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20,
-    marginHorizontal: 4,
-    width: 50,
+    paddingTop: 8,
+    marginHorizontal: 2,
   },
   dashLine: {
     position: 'absolute',
-    top: 43,
+    top: 28,
     left: 0,
     right: 0,
     height: 1,
@@ -273,23 +284,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  dotsRow: {
+  coversRow: {
     flexDirection: 'row',
-    gap: DOT_GAP,
+    gap: 4,
     alignItems: 'center',
   },
-  dot: {
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
+  coverThumbWrap: {
+    position: 'relative',
   },
-  dotFilled: {
-    backgroundColor: colors.teal,
-  },
-  dotEmpty: {
+  coverThumb: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
     backgroundColor: colors.backgroundElevated,
-    borderWidth: 1,
-    borderColor: colors.border,
+  },
+  coverThumbActive: {
+    borderWidth: 1.5,
+    borderColor: '#7B68EE',
+  },
+  coverThumbDone: {
+    opacity: 0.5,
+  },
+  coverThumbLocked: {
+    opacity: 0.25,
+  },
+  coverCheckMini: {
+    position: 'absolute',
+    bottom: 1,
+    right: 1,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.teal,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Footer
