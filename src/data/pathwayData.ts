@@ -145,8 +145,8 @@ export const MANIFESTING_PATHWAY: Pathway = {
   name: 'Manifesting',
   tagline: 'Law of Attraction & Abundance',
   icon: '\u{2728}', // sparkles
-  gradientColors: ['#2a1a4e', '#4a2a6e'],
-  accentColor: '#7B68EE',
+  gradientColors: ['#3d1500', '#7a3200'],
+  accentColor: '#F5A623',
   phases: MANIFESTING_PHASES,
   totalPrograms: 30,
   totalLessons: 450,

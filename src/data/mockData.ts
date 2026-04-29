@@ -138,6 +138,50 @@ export const achievements = [
   },
 ];
 
+export const badgesData = [
+  {
+    id: '1',
+    name: 'Foundation Builder',
+    image: 'https://images.unsplash.com/photo-1496062031456-07b8f162a322?w=200&q=80', // pink peony
+    earned: true,
+  },
+  {
+    id: '2',
+    name: 'Deep Diver',
+    image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=200&q=80', // colorful gradient orb
+    earned: true,
+  },
+  {
+    id: '3',
+    name: 'Master Manifestor',
+    image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=200&q=80', // dark ocean
+    earned: false,
+  },
+  {
+    id: '4',
+    name: 'Integration Expert',
+    image: 'https://images.unsplash.com/photo-1444930694458-01babf71870c?w=200&q=80', // dark rose
+    earned: false,
+  },
+];
+
+export const growthGoalTags = [
+  { id: '1', emoji: '🏃', label: 'Fitness' },
+  { id: '2', emoji: '😴', label: 'Better Sleep' },
+  { id: '3', emoji: '🌿', label: 'Wellness' },
+  { id: '4', emoji: '🎤', label: 'Communication' },
+  { id: '5', emoji: '🏆', label: 'Coaching' },
+  { id: '6', emoji: '🎨', label: 'Boost Creativity' },
+];
+
+export const streakData = {
+  currentStreak: 4,
+  longestStreak: 124,
+  // Mon–Sun: true = completed, false = not yet
+  weekActivity: [true, true, true, true, false, false, false],
+  todayIndex: 3, // Thursday
+};
+
 export const growthGoals = [
   { id: '1', title: 'Deeper Connection with Your Partner', color: '#E040FB' },
   { id: '2', title: 'Getting Fitter', color: '#E040FB' },

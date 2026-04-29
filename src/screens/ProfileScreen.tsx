@@ -12,9 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { user } from '../data/mockData';
+import { user, streakData, badgesData, growthGoalTags } from '../data/mockData';
 import { usePathway } from '../context/PathwayContext';
-import JourneyMapCard from '../components/JourneyMapCard';
+import TransformationCard from '../components/TransformationCard';
+import StreakCard from '../components/StreakCard';
+import BadgesSection from '../components/BadgesSection';
+import GrowthGoalsSection from '../components/GrowthGoalsSection';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -66,15 +69,15 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* My Transformation */}
+        {/* Transformation Progress */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Transformation</Text>
+          <Text style={styles.sectionTitle}>Transformation Progress</Text>
           {ownedPathways.length > 0 ? (
             ownedPathways.map(pw => {
               const progress = scenario.progressMap[pw.id];
               if (!progress) return null;
               return (
-                <JourneyMapCard
+                <TransformationCard
                   key={pw.id}
                   pathway={pw}
                   progress={progress}
@@ -92,31 +95,53 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        {/* Streaks */}
+        <View style={styles.section}>
+          <StreakCard
+            currentStreak={streakData.currentStreak}
+            longestStreak={streakData.longestStreak}
+            weekActivity={streakData.weekActivity}
+            todayIndex={streakData.todayIndex}
+          />
+        </View>
+
+        {/* Badges */}
+        <View style={styles.section}>
+          <BadgesSection badges={badgesData} />
+        </View>
+
         {/* Library */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Library</Text>
-          <TouchableOpacity style={styles.listItem}>
-            <Ionicons name="book-outline" size={22} color={colors.textPrimary} />
-            <Text style={styles.listItemText}>Continue programs</Text>
-            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.listItem}>
-            <Ionicons name="bookmark-outline" size={22} color={colors.textPrimary} />
-            <Text style={styles.listItemText}>Favorites</Text>
-            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.listItem}>
-            <Ionicons name="checkmark-circle-outline" size={22} color={colors.textPrimary} />
-            <Text style={styles.listItemText}>Completed</Text>
-            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.listItem, styles.listItemLast]}>
-            <Ionicons name="download-outline" size={22} color={colors.textPrimary} />
-            <Text style={styles.listItemText}>Downloads</Text>
-            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-          </TouchableOpacity>
+          <View style={styles.libraryCard}>
+            <TouchableOpacity style={styles.listItem}>
+              <Ionicons name="book-outline" size={22} color={colors.textPrimary} />
+              <Text style={styles.listItemText}>Continue programs</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.listItem}>
+              <Ionicons name="bookmark-outline" size={22} color={colors.textPrimary} />
+              <Text style={styles.listItemText}>Favourites</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.listItem}>
+              <Ionicons name="checkmark-circle-outline" size={22} color={colors.textPrimary} />
+              <Text style={styles.listItemText}>Completed Programs</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.listItem, styles.listItemLast]}>
+              <Ionicons name="download-outline" size={22} color={colors.textPrimary} />
+              <Text style={styles.listItemText}>Offline Downloads</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
         </View>
 
+
+        {/* Growth Goals */}
+        <View style={styles.section}>
+          <GrowthGoalsSection tags={growthGoalTags} />
+        </View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -255,6 +280,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   // Library
+  libraryCard: {
+    backgroundColor: colors.backgroundCard,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    overflow: 'hidden',
+  },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
