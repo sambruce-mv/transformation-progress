@@ -6,12 +6,28 @@ import { UserProvider } from './src/context/UserContext';
 import { PathwayProvider } from './src/context/PathwayContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
+const linking = {
+  prefixes: [],
+  config: {
+    screens: {
+      Main: '',
+      Profile: 'profile',
+      Settings: 'settings',
+      Search: 'search',
+      Notifications: 'notifications',
+      Progress: 'progress',
+      PathwayDetail: 'pathway/:pathwayId',
+      QuestDetail: 'quest/:questId',
+    },
+  },
+};
+
 function AppContent() {
   return (
     <UserProvider>
       <PathwayProvider>
         <SafeAreaProvider>
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <StatusBar style="dark" />
             <RootNavigator />
           </NavigationContainer>
