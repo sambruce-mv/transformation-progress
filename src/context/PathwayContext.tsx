@@ -32,7 +32,7 @@ interface PathwayContextType {
 const PathwayContext = createContext<PathwayContextType | undefined>(undefined);
 
 export function PathwayProvider({ children }: { children: ReactNode }) {
-  const [scenarioId, setScenarioId] = useState('mid-progress');
+  const [scenarioId, setScenarioId] = useState('day-1-just-started');
   const [celebrationDismissed, setCelebrationDismissed] = useState(false);
 
   const scenario = PATHWAY_SCENARIOS.find(s => s.id === scenarioId) ?? PATHWAY_SCENARIOS[0];
